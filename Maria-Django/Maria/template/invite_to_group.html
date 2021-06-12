@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        <h1>邀请入群</h1>
+        <form action="/invite_to_group/" method="post">
+            {% csrf_token %}
+            <input type="test" name="receiver" placeholder="请输入欲邀请的人名"/>
+            <br/>
+            <input type="text" name="group" placeholder="请输入欲邀请到的团队名"/>
+            <br/>
+            <!-- <input type="text" name="document" placeholder="请输入"/>
+            <br/> -->
+            <button type="submit">邀 请</button>
+            <br/>
+        </form>
+        {% if message %}
+            <script type="text/javascript">
+                alert("{{ message }}");
+            </script>
+        {% endif %}
+    </body>
+</html>

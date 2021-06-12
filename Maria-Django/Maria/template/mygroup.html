@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        <p>
+            "当前用户": {{ username }}
+            的组
+        </p>
+        <p>
+            {% for group in my_grouplist %}
+                {{group.id}}
+                {{group.title}}
+            {% endfor %}
+        </p>
+        <br/>
+        <a class="button" href="/">首页</a>
+        {% if message %}
+            <script type="text/javascript">
+                alert("{{ message }}");
+            </script>
+        {% endif %}
+    </body>
+</html>

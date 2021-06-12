@@ -7,7 +7,7 @@
         <p>
             "当前用户": {{ username }}
         </p>
-        <form action="/user_info/" method="post">
+        <form action="/modify_user_info/" method="post">
             {% csrf_token %}
             <input type="password" name="new_password" placeholder="请输入密码"/>
             <br/>

@@ -12,6 +12,11 @@ class Doc(models.Model):
     content = RichTextField(blank=True,null=True)
     modified_time = models.DateTimeField(auto_now=True)
     is_recycled = models.BooleanField(default=False)
+    is_group_doc = models.BooleanField(default=False)
+    doc_group_id = models.IntegerField(null=True,blank=True)
+    modify_right = models.BooleanField(default=True)
+    others_modify_right = models.BooleanField(default=True)
+
 
 class DocUser(models.Model):
     document_id = models.IntegerField
@@ -27,3 +32,10 @@ class GroupMember(models.Model):
     group_id = models.IntegerField
     user_id = models.IntegerField
     
+class InviteMessage(models.Model):
+    sender_name = models.CharField(max_length=100)
+    receiver_name = models.CharField(max_length=100)
+    group_id = models.IntegerField
+    is_accept = models.BooleanField(null=True,blank=True)
+    content = models.CharField(max_length=400,null=True,blank=True)
+    # document_id = models.IntegerField

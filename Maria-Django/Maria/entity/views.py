@@ -1,3 +1,5 @@
+from django.core.checks import messages
+from django.db.models.query import QuerySet
 from django.shortcuts import *
 from entity.models import *
 from entity.form import DocForm
@@ -58,7 +60,7 @@ def show_user_info(request): #如果登入了
         cur_user = User.objects.get(name=cur_username) #用名字查询用户，显示用户信息（密码，用户名）
         return render(request, 'show_user_info.html', {'username':cur_username,'password':cur_user.password})
     else: #如果还没登入，跳转到登入界面（下面多数也是这样的。。。）
-        return redirect('login/')
+        return redirect('/login/')
 
 #修改用户信息（密码）
 def modify_user_info(request):
@@ -66,25 +68,26 @@ def modify_user_info(request):
         cur_username = request.session['username']
         cur_user = User.objects.get(name=cur_username) #用名字查询用户
         if request.method == 'POST':
-            new_pass = request.post.get('new_password') #新密码
-            if new_pass == request.post.get('new_password2'): #确认新密码
+            new_pass = request.POST.get('new_password') #新密码
+            if new_pass == request.POST.get('new_password2'): #确认新密码
                 cur_user.password = new_pass
                 cur_user.save()
+                return redirect('/show_user_info')
             else:
                 return render(request, 'modify_user_info.html', {'username':cur_username,'message': '两次密码不一致'})
         else:
             return render(request, 'modify_user_info.html', {'username':cur_username})
     else:#如果还没登入，跳转到登入界面
-        return redirect('login/') 
+        return redirect('/login/') 
 
 #显示我创建的文档
 def my_docslist(request):
     if request.session.get('username'):
         cur_username = request.session['username']
-        my_docslist = Doc.objects.filter(creator = cur_username) #用用户名字对应 creator 名字，查找文档
+        my_docslist = Doc.objects.filter(creator = cur_username).filter(is_recycled = False) #用用户名字对应 creator 名字，查找文档
         return render(request,'mydocs.html',{'username':cur_username,'my_docslist':my_docslist}) #返回所有找到的文档
     else:
-        return redirect('login/')
+        return redirect('/login/')
 
 #创建文档
 def create_doc(request):
@@ -102,7 +105,7 @@ def create_doc(request):
             docForm = DocForm()
             return render(request,'create_doc.html',{'doc': docForm})
     else:
-        return redirect('login/')
+        return redirect('/login/')
 
 #修改文档
 def edit_doc(request):
@@ -121,4 +124,64 @@ def edit_doc(request):
             docForm = DocForm(instance = doc)
             return render(request,'edit_doc.html',{'title':doc.title,'doc': docForm})
     else:
-        return redirect('login/')
+        return redirect('/login/')
+
+#发送邀请别人进group
+def invite_to_group(request):
+    if request.session.get('username'):
+        cur_username = request.session['username']
+        cur_user = User.objects.get(name=cur_username)
+        if request.method == 'POST': #Post请求，输入了要邀请人的名字，按了send
+            #填充邀请信息
+            invitation = InviteMessage()
+            invitation.sender_name = cur_username
+            #先查询欲邀请的人是否存在
+            receiverName = request.POST.get('receiver')
+            if User.objects.filter(name = receiverName).exists():
+                receiver = User.objects.filter(name = receiverName).first()
+                # invitation.receiver_name = receiverName
+            else:
+                return render(request,'invite_to_group.html',{'message':"此用户不存在"})
+            #查询发送者是不是在这个group里/group存不存在
+            group_id = request.POST.get('group')
+            if Group.objects.filter(id = group_id).exists():
+                if GroupMember.objects.filter(user_id = cur_user.id).exists():
+                    invitation.group_id = group_id
+                else:
+                    return render(request,'invite_to_group.html',{'message':"你不在这样的团队"})
+            else:
+                return render(request,'invite_to_group.html',{'message':"此团队不存在"})
+            #查询欲邀请的人是否已经在group里
+            if GroupMember.objects.filter(user_id = receiver.id).exists():
+                return render(request,'invite_to_group.html',{'message':"此用户已存在这个团队"})
+            else:
+                invitation.receiver_name = receiverName
+            #查询这个文档是否存在刚才输入的group里
+            # docId = request.POST.get('doc_Id')
+            # if Doc.objects.filter(is_group_doc = True).filter(doc_group_id = group_id).exists():
+            #     invitation.document_id = docId
+            # else:
+            #     return render(request,'invite_to_group.html',{'messages':"你的团队中没有这个的文档"})
+            invitation.save()
+            return redirect('/')
+        else:
+            return render(request,'invite_to_group.html')
+            #get 请求，刚进邀请人界面
+    else:
+        return redirect('/login/')
+
+
+# 查看自己目前有什么组
+def mygroup(request):
+    # 如果用户已经登录了
+    if request.session.get('username'):
+        cur_username = request.session['username']
+        cur_user = User.objects.get(name = cur_username)
+        my_groups = GroupMember.objects.filter(id = cur_user.id)
+        my_grouplist = QuerySet()
+        for group in my_groups.iterator():
+            my_grouplist |= Group.objects.filter(id = group.id)
+        # 返回有“我”的团队名
+        return render(request, 'mygroup.html', {'username': cur_username, 'my_grouplist': my_groups})
+    else:
+        return redirect('/login/')
