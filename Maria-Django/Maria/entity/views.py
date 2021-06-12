@@ -4,9 +4,13 @@ from entity.form import DocForm
 
 # Create your views here.
 def home(request):
-    username = ''
+    if request.session.get('username'):
+        cur_username = request.session['username']
+        return render(request,"home.html",context={'username':cur_username})
+    else:
+        return render(request,"home.html")
     # message = 'try'
-    return render(request,"home.html",context={'username':username})
+    # return render(request,"home.html",context={'username':username})
 
 def register(request):
     if request.method == 'POST':
