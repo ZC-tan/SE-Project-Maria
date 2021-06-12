@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        <h1>创建团队</h1>
+        <form action="/login/" method="post">
+            {% csrf_token %}
+            <input type="text" name="groupname" placeholder="请输入团队名"/>
+            <br/>
+            <button type="submit">创 建</button>
+            <br/>
+        </form>
+        <div style="margin: 15px 0;height: 1px; background-color: #eee;"></div>
+        <a class="button" href="../">主页</a>
+        {% if message %}
+            <script type="text/javascript">
+                alert("{{ message }}");
+            </script>
+        {% endif %}
+    </body>
+</html>

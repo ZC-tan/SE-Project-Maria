@@ -185,3 +185,26 @@ def mygroup(request):
         return render(request, 'mygroup.html', {'username': cur_username, 'my_grouplist': my_groups})
     else:
         return redirect('/login/')
+
+# 已登录的用户创建group
+def creategroup(request):
+    # 如果用户已经登录了
+    if request.session.get('username'):
+        cur_username = request.session['username']
+        cur_user = User.objects.get(name=cur_username)
+        if request.method == 'POST':
+            new_group = Group()
+            new_group.leader_id = cur_user.id
+            new_group.groupname = request.POST.get('groupname')
+            new_group.save()
+
+            newGroupMember = GroupMember()
+            newGroupMember.group_id = new_group.id
+            newGroupMember.user_id = cur_user.id
+            newGroupMember.save()
+            #POST 请求创建团队成功，返回到自己的group列表
+            return redirect(mygroup)
+        else: #创建团队的页面
+            return render(request,'newgroup.html')
+    else:
+        return redirect('/login/')

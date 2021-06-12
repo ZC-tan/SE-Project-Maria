@@ -31,6 +31,7 @@ urlpatterns = [
     path('editdoc/',edit_doc,name='editdoc'),
     #团队
     path('invite_to_group/',invite_to_group,name='invite_to_group'),
+    path('creategroup/',creategroup,name='creategroup'),
     path('mygroup/',mygroup,name='mygroup'),
     path('admin/', admin.site.urls),
 ]
