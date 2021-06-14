@@ -18,20 +18,32 @@ from django.urls import path
 from entity.views import *
 
 urlpatterns = [
-    #基本
+    # 基本
     path('',home,name='home'),
     path('register/',register,name='register'),
     path('login/',login,name='login'),
     path('logout/',logout,name='logout'),
     path('modify_user_info/',modify_user_info,name='modify_user_info'),
     path('show_user_info/',show_user_info,name='show_user_info'),
-    #文档
+
+    # 文档
     path('mydocs/',my_docslist,name='my_docslist'),
     path('createdoc/',create_doc,name='createdoc'),
     path('editdoc/',edit_doc,name='editdoc'),
-    #团队
+
+    # 团队
     path('invite_to_group/',invite_to_group,name='invite_to_group'),
     path('creategroup/',creategroup,name='creategroup'),
     path('mygroup/',mygroup,name='mygroup'),
     path('admin/', admin.site.urls),
+
+    # 列表view
+    # url(r'^members/$', views.GroupMemberListView.as_view()),
+    # detail view
+    # url(r'^members/(?P<pk>\d+)/$', views.GroupMemberDetailView.as_view()),
 ]
+router = DefaultRouter()
+router.register(r'members', views.GroupMemberView)
+urlpatterns += router.urls
+
+
