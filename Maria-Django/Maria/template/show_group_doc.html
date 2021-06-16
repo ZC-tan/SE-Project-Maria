@@ -5,24 +5,28 @@
     </head>
     <body>
         <p>
-            "当前用户": {{ username }}
-            的文档
+            "当前团队": {{ group.name }} 的文档
         </p>
         <p>
             {% for doc in my_docslist %}
                 {{doc.title}}
-                <a href="/editdoc/?id={{doc.id}}">修改</a>
-                <a href="/recycledoc/?id={{doc.id}}">回收</a>
+                <!-- <a href="/editdoc/?id={{doc.id}}">修改</a> -->
+                <!-- <a href="/recycledoc/?id={{doc.id}}">回收</a> -->
                 <br/>
             {% endfor %}
         </p>
         <br/>
-        <a class="button" href="../createdoc">创建文档</a>
+        <a class="button" href="../create_group_doc/?group_id={{group.id}}">创建文档</a>
         <br/>
         <a class="button" href="/">首页</a>
         {% if message %}
             <script type="text/javascript">
                 alert("{{ message }}");
+            </script>
+        {% endif %}
+        {% if request.session.message %}
+            <script type="text/javascript">
+                alert("{{ request.session.message }}");
             </script>
         {% endif %}
     </body>

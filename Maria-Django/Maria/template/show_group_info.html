@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        <p>
+            "当前团队": {{ group }}
+        </p>
+        <a class="button" href="show_group_doc/?group_id={{group.id}}">查看团队文档</a>
+        <br/>
+        <a class="button" href="../creategroup">查看团队成员</a>
+        <br/>
+        <a class="button" href="/">首页</a>
+        <br/>
+        {% if message %}
+            <script type="text/javascript">
+                alert("{{ message }}");
+            </script>
+        {% endif %}
+    </body>
+</html>

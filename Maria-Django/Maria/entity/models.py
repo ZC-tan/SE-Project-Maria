@@ -19,23 +19,25 @@ class Doc(models.Model):
 
 
 class DocUser(models.Model):
-    document_id = models.IntegerField
-    user_id = models.IntegerField
+    document_id = models.IntegerField(null=True)
+    user_name = models.CharField(max_length=100)
     is_favourited = models.BooleanField(default=False)
     modified_time = models.DateTimeField(auto_now=True)
 
 class Group(models.Model):
     groupname = models.CharField(max_length=100)
-    leader_id = models.IntegerField
+    leader_name = models.CharField(max_length=100,null=True)
 
 class GroupMember(models.Model):
-    group_id = models.IntegerField
-    user_id = models.IntegerField
-    
+    group_id = models.IntegerField(null=True)
+    user_name = models.CharField(max_length=100)
+    others_create_right = models.BooleanField(default=True)
+    others_recycle_right = models.BooleanField(default=False)
+
 class InviteMessage(models.Model):
     sender_name = models.CharField(max_length=100)
     receiver_name = models.CharField(max_length=100)
-    group_id = models.IntegerField
+    group_id = models.IntegerField(null=True)
     is_accept = models.BooleanField(null=True,blank=True)
     content = models.CharField(max_length=400,null=True,blank=True)
     # document_id = models.IntegerField

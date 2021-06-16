@@ -1,9 +1,18 @@
 from django.core.checks import messages
+from django.db.models.base import Model
 from django.db.models.query import QuerySet
 from django.shortcuts import *
 from entity.models import *
 from entity.form import DocForm
 
+
+#███╗   ███╗██╗   ██╗██╗███╗   ██╗███████╗ ██████╗ 
+#████╗ ████║╚██╗ ██╔╝██║████╗  ██║██╔════╝██╔═══██╗
+#██╔████╔██║ ╚████╔╝ ██║██╔██╗ ██║█████╗  ██║   ██║
+#██║╚██╔╝██║  ╚██╔╝  ██║██║╚██╗██║██╔══╝  ██║   ██║
+#██║ ╚═╝ ██║   ██║   ██║██║ ╚████║██║     ╚██████╔╝
+#╚═╝     ╚═╝   ╚═╝   ╚═╝╚═╝  ╚═══╝╚═╝      ╚═════╝ 
+                                                  
 # Create your views here.
 def home(request):
     #如果已经登陆，回到主界面时，要可以查看文档，信息等
@@ -80,11 +89,21 @@ def modify_user_info(request):
     else:#如果还没登入，跳转到登入界面
         return redirect('/login/') 
 
+
+                                                                                            
+
+#███╗   ███╗██╗   ██╗██████╗  ██████╗  ██████╗
+#████╗ ████║╚██╗ ██╔╝██╔══██╗██╔═══██╗██╔════╝
+#██╔████╔██║ ╚████╔╝ ██║  ██║██║   ██║██║     
+#██║╚██╔╝██║  ╚██╔╝  ██║  ██║██║   ██║██║     
+#██║ ╚═╝ ██║   ██║   ██████╔╝╚██████╔╝╚██████╗
+#╚═╝     ╚═╝   ╚═╝   ╚═════╝  ╚═════╝  ╚═════╝
+                                                 
 #显示我创建的文档
 def my_docslist(request):
     if request.session.get('username'):
         cur_username = request.session['username']
-        my_docslist = Doc.objects.filter(creator = cur_username).filter(is_recycled = False) #用用户名字对应 creator 名字，查找文档
+        my_docslist = Doc.objects.filter(is_group_doc=False).filter(creator = cur_username).filter(is_recycled = False) #用用户名字对应 creator 名字，查找文档
         return render(request,'mydocs.html',{'username':cur_username,'my_docslist':my_docslist}) #返回所有找到的文档
     else:
         return redirect('/login/')
@@ -126,6 +145,26 @@ def edit_doc(request):
     else:
         return redirect('/login/')
 
+#把文档放进回收站（修改is_recycled来标注）
+def recycle_doc(request):
+    if request.session.get('username'):
+        cur_username = request.session['username']
+        doc_id = request.GET.get('id')
+        doc = Doc.objects.filter(id=doc_id).first()
+        doc.is_recycled = True
+        doc.save()
+        return redirect('/mydocs/')
+    else:
+        return redirect('/login/')
+
+
+# ██████╗ ██████╗  ██████╗ ██╗   ██╗██████╗ 
+#██╔════╝ ██╔══██╗██╔═══██╗██║   ██║██╔══██╗
+#██║  ███╗██████╔╝██║   ██║██║   ██║██████╔╝
+#██║   ██║██╔══██╗██║   ██║██║   ██║██╔═══╝ 
+#╚██████╔╝██║  ██║╚██████╔╝╚██████╔╝██║     
+# ╚═════╝ ╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚═╝     
+                                           
 #发送邀请别人进group
 def invite_to_group(request):
     if request.session.get('username'):
@@ -145,14 +184,15 @@ def invite_to_group(request):
             #查询发送者是不是在这个group里/group存不存在
             group_id = request.POST.get('group')
             if Group.objects.filter(id = group_id).exists():
-                if GroupMember.objects.filter(user_id = cur_user.id).exists():
+                group = Group.objects.get(id = group_id)
+                if GroupMember.objects.filter(user_name = cur_username).exists():
                     invitation.group_id = group_id
                 else:
                     return render(request,'invite_to_group.html',{'message':"你不在这样的团队"})
             else:
                 return render(request,'invite_to_group.html',{'message':"此团队不存在"})
             #查询欲邀请的人是否已经在group里
-            if GroupMember.objects.filter(user_id = receiver.id).exists():
+            if GroupMember.objects.filter(user_name = receiverName).exists():
                 return render(request,'invite_to_group.html',{'message':"此用户已存在这个团队"})
             else:
                 invitation.receiver_name = receiverName
@@ -162,6 +202,7 @@ def invite_to_group(request):
             #     invitation.document_id = docId
             # else:
             #     return render(request,'invite_to_group.html',{'messages':"你的团队中没有这个的文档"})
+            invitation.content = invitation.sender_name + " have inited you to join Group: " +group.name
             invitation.save()
             return redirect('/')
         else:
@@ -177,12 +218,12 @@ def mygroup(request):
     if request.session.get('username'):
         cur_username = request.session['username']
         cur_user = User.objects.get(name = cur_username)
-        my_groups = GroupMember.objects.filter(id = cur_user.id)
-        my_grouplist = QuerySet()
+        my_groups = GroupMember.objects.filter(user_name = cur_username).all()
+        my_grouplist = Group.objects.none()
         for group in my_groups.iterator():
-            my_grouplist |= Group.objects.filter(id = group.id)
+            my_grouplist |= Group.objects.filter(id = group.group_id)
         # 返回有“我”的团队名
-        return render(request, 'mygroup.html', {'username': cur_username, 'my_grouplist': my_groups})
+        return render(request, 'mygroup.html', {'username': cur_username, 'my_grouplist': my_grouplist})
     else:
         return redirect('/login/')
 
@@ -194,13 +235,13 @@ def creategroup(request):
         cur_user = User.objects.get(name=cur_username)
         if request.method == 'POST':
             new_group = Group()
-            new_group.leader_id = cur_user.id
+            new_group.leader_name = cur_username
             new_group.groupname = request.POST.get('groupname')
             new_group.save()
 
             newGroupMember = GroupMember()
             newGroupMember.group_id = new_group.id
-            newGroupMember.user_id = cur_user.id
+            newGroupMember.user_name = cur_username
             newGroupMember.save()
             #POST 请求创建团队成功，返回到自己的group列表
             return redirect(mygroup)
@@ -208,3 +249,136 @@ def creategroup(request):
             return render(request,'newgroup.html')
     else:
         return redirect('/login/')
+
+#查看团队详情
+def show_group_info(request):
+    if request.session.get('username'):
+        cur_username = request.session['username']
+        cur_user = User.objects.get(name=cur_username)
+        #get 请求得到团队id，用这个id显示团队信息
+        group_id = request.GET.get('group_id')
+        group = Group.objects.filter(id = group_id).first()
+        return render(request,'show_group_info.html',{'group':group})
+    else:
+        return redirect('/login/')
+
+
+#查看团队里的文档
+def show_group_doc(request):
+    if request.session.get('username'):
+        cur_username = request.session['username']
+        cur_user = User.objects.get(name=cur_username)
+        #get 请求得到团队id，用这个id显示团队文档
+        group_id = request.GET.get('group_id')
+        group = Group.objects.get(id = group_id)   #TODO 修改权限
+        #队长和队员看到的要有区别。。。
+        if group.leader_name == cur_username:
+            my_docslist = Doc.objects.filter(is_group_doc=True).filter(doc_group_id = group_id)
+            return render(request,'mydocs.html',{'group':group,'my_docslist':my_docslist})
+        else:
+            my_docslist = Doc.objects.filter(is_group_doc=True).filter(doc_group_id = group_id).filter(others_modify_right = True)
+            return render(request,'mydocs.html',{'group':group,'my_docslist':my_docslist})
+    else:
+        return redirect('/login/')
+
+#创建团队文档
+def create_group_doc(request):
+    if request.session.get('username'):
+        cur_username = request.session['username']
+        cur_user = User.objects.get(name=cur_username)
+        group_id = request.GET.get('group_id')
+        group = Group.objects.get(id = group_id)
+        cur_group_member = GroupMember.objects.filter(group_id = group_id).filter(user_name = cur_username)
+        #检查权限
+        if group.leader_name == cur_username or cur_group_member.others_create_right == True:
+            if request.method == 'POST':
+                form = DocForm(request.POST) #如果POST请求，就代表用户按了submit，则用POST创建DocForm(一种 ModelForm)的表单
+                if form.is_valid():
+                    newDoc = form.save(commit=False) #用DocForm表单存储 Doc 文档类信息
+                    newDoc.creator = cur_username
+                    newDoc.is_group_doc = True
+                    newDoc.group = group_id
+                    newDoc.save()
+                    return redirect('/show_group_doc/')
+                else:
+                    docForm = DocForm()
+                    return render(request,'create_doc.html',{'doc': docForm})
+        else:
+            request.session['message'] = "您没有权限创建文档"
+            return redirect('/show_group_doc/')
+    else:
+        return redirect('/login/')
+
+#██╗███╗   ██╗██╗   ██╗██╗████████╗███████╗███████╗
+#██║████╗  ██║██║   ██║██║╚══██╔══╝██╔════╝██╔════╝
+#██║██╔██╗ ██║██║   ██║██║   ██║   █████╗  ███████╗
+#██║██║╚██╗██║╚██╗ ██╔╝██║   ██║   ██╔══╝  ╚════██║
+#██║██║ ╚████║ ╚████╔╝ ██║   ██║   ███████╗███████║
+#╚═╝╚═╝  ╚═══╝  ╚═══╝  ╚═╝   ╚═╝   ╚══════╝╚══════╝
+
+#查看我收到的邀请
+def myinvitations(request):
+    if request.session.get('username'):
+        cur_username = request.session['username']
+        cur_user = User.objects.get(name=cur_username)
+        my_invitation = InviteMessage.objects.filter(receiver_name = cur_username).all()
+        return render(request, 'myinvitations.html', {'username': cur_username, 'my_invitation': my_invitation})
+    else:
+        return redirect('/login/')
+
+
+#接受邀请
+def accept_invites(request):
+    if request.session.get('username'):
+        cur_username = request.session['username']
+        cur_user = User.objects.get(name=cur_username)
+        #Get请求获取邀请函id
+        inv_id = request.GET.get('inv_id')
+        #数据库中找到邀请函
+        invitation = InviteMessage.objects.get(id=inv_id)
+        #根据邀请函，加人入团队
+        if Group.objects.filter(id=invitation.group_id).exists():
+            group = Group.objects.get(id=invitation.group_id)
+            newGroupMember = GroupMember()
+            newGroupMember.group_id = group.id
+            newGroupMember.user_name = cur_username
+            newGroupMember.save()
+            #删除邀请
+            invitation.delete()
+            redirect('/mygroup/')
+        else:
+            redirect('/myinvitations/')
+    else:
+        return redirect('/login/')
+
+#拒绝邀请
+def accept_invites(request):
+    if request.session.get('username'):
+        cur_username = request.session['username']
+        cur_user = User.objects.get(name=cur_username)
+        #Get请求获取邀请函id
+        inv_id = request.GET.get('inv_id')
+        #数据库中找到邀请函
+        invitation = InviteMessage.objects.get(id=inv_id)
+        invitation.delete()
+        redirect('/mygroup/')
+    else:
+        return redirect('/login/')
+
+
+
+# 后端：
+# recycle 个人文档,查看，删除被 recycle 个人文档,
+# favourite
+#  
+# 组长设置权限
+# 创建，查看，修改团队文档
+# 
+# 查看特定组里有其他什么组员
+# 踢成员（会发消息）
+
+# 退出团队（给组长发消息？？？）
+
+# 评论？
+
+#检查 register/login 密码判断

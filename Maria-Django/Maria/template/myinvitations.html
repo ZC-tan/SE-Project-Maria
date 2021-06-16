@@ -5,19 +5,14 @@
     </head>
     <body>
         <p>
-            "当前用户": {{ username }}
-            的文档
+            "当前用户": {{ username }} 收到的邀请
         </p>
         <p>
-            {% for doc in my_docslist %}
-                {{doc.title}}
-                <a href="/editdoc/?id={{doc.id}}">修改</a>
-                <a href="/recycledoc/?id={{doc.id}}">回收</a>
-                <br/>
+            {% for inv in my_invitation %}
+                {{inv.content}}
+                <a class="button" href="/accept_invites/?inv_id={{inv.id}}">接受</a>
             {% endfor %}
         </p>
-        <br/>
-        <a class="button" href="../createdoc">创建文档</a>
         <br/>
         <a class="button" href="/">首页</a>
         {% if message %}
