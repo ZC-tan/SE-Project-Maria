@@ -131,15 +131,15 @@ def edit_doc(request):
     if request.session.get('username'):
         cur_username = request.session['username']
         cur_user = User.objects.get(name=cur_username)
-        if request.method == 'POST':
-            form = DocForm(request.POST) #如果POST请求，就代表用户按了submit，则用POST创建DocForm(一种 ModelForm)的表单
+        doc_id = request.GET.get('id') #根绝GET 请求传进来的id，找到对应的文档，并显示
+        doc = Doc.objects.filter(id=doc_id).first()
+        if request.method == 'POST':   
+            form = DocForm(request.POST, instance=doc) #如果POST请求，就代表用户按了submit，则用POST创建DocForm(一种 ModelForm)的表单
             if form.is_valid():
                 newDoc = form.save(commit=False)
                 newDoc.save()
             return redirect('/mydocs/')
         else:
-            doc_id = request.GET.get('id') #根绝GET 请求传进来的id，找到对应的文档，并显示
-            doc = Doc.objects.filter(id=doc_id).first()
             docForm = DocForm(instance = doc)
             return render(request,'edit_doc.html',{'title':doc.title,'doc': docForm})
     else:
