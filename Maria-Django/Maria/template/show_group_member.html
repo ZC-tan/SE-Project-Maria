@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        <p>
+            "当前团队": {{ group.groupname }}
+        </p>
+        <p>
+            "队长": {{ leader }}
+        </p>
+        <tr>
+            <th>队员列表</th>
+        </tr>
+        <br/>
+        {% if isLeader %}
+            {% for members in groupmember %}
+                <tr>
+                    <td>{{ members.user_name }}</td>
+                    <td>
+                        <form action="/kick_group_member/" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="groupid" value="{{group.id}}">
+                            <input type="hidden" name="username" value="{{members.user_name}}">
+                            <button type="submit">踢</button>
+                        </form>
+                    </td>
+                    <!-- <a class="button" href="/kick_group_member/?group_id={{group.id}}">踢</a> -->
+                </tr>
+                <br/>
+            {% endfor %}
+        {% else %}
+            {% for members in groupmember %}
+                <tr>
+                    <td>{{ members.user_name }}</td>
+                </tr>
+                <br/>
+            {% endfor %}
+        {% endif %}
+        <br/>
+            <a class="button" href="/">首页</a>
+        <br/>
+        {% if message %}
+            <script type="text/javascript">
+                alert("{{ message }}");
+            </script>
+        {% endif %}
+    </body>
+</html>

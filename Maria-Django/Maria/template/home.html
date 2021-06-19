@@ -35,26 +35,30 @@
             border-right: solid 3px #aaa;
             border-radius: 5px;
         }
+        body{
+            background-size: cover;
+            background: url(wallpaper.jpg) no-repeat fixed;
+}
     </style>
 </head>
 <body>
     <div style="height: 30px"></div>
     {% if username %}
-        <p class="welcome">Hello123 {{ username }} !</p>
-        <a class="button" href="../show_user_info">查看个人信息</a>
+        <p class="welcome">Hello {{ username }} !</p>
+        <a class="button" href="/show_user_info">查看个人信息</a>
         <br/>
-        <a class="button" href="../mydocs">文档列表</a>
+        <a class="button" href="/mydocs">文档列表</a>
         <br/>
-        <a class="button" href="../mygroup">查看我所在团队</a>
+        <a class="button" href="/mygroup">查看我所在团队</a>
         <br/>
-        <a class="button" href="../myinvitations">查看我的信息</a>
+        <a class="button" href="/myinvitations">查看我的信息</a>
         <br/>
-        <a class="button" href="../logout">退出登录</a>
+        <a class="button" href="/logout">退出登录</a>
     {% else %}
         <p class="welcome">Hello world !</p>
-        <a class="button" href="../login">登录</a>
+        <a class="button" href="/login">登录</a>
         <br/>
-        <a class="button" href="../register">注册</a>
+        <a class="button" href="/register">注册</a>
         <br/>
     {% endif %}
     {% if message %}
@@ -64,3 +68,4 @@
     {% endif %}
 </body>
 </html>
+
